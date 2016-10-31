@@ -1,0 +1,99 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<dom-module id="my-tag">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+        position: relative;
+      }
+      h2 span {
+        font-size: 1rem;
+        font-weight: 400;
+      }
+      .tags {
+        border-top: 1px solid #e0e0e0;
+        padding-top: 16px;
+      }
+      .tag-icon {
+        margin-right: 5px;
+      }
+      .tags .tag::after {
+        content: ',';
+      }
+      .tags .tag:last-of-type:after {
+        content: '';
+      }
+    </style>
+
+    <app-route
+        route="{{route}}"
+        pattern="/:tag"
+        data="{{routeData}}"
+        tail="{{subroute}}"></app-route>
+
+    <template is="dom-if" if="{{loading}}">
+      <div class="showbox">
+        <div class="loader">
+          <svg class="circular" viewBox="25 25 50 50">
+            <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"/>
+          </svg>
+        </div>
+      </div>
+    </template>
+
+    <template is="dom-repeat" items="{{vocabulary}}" as="v">
+      <div class="card">
+        <h2>{{v.VocabularyKr.S}}<span> ({{v.Type.S}})</span></h2>
+        <h3>{{v.VocabularyEn.S}}</h3>
+        <p>{{v.ExampleKR.S}}</p>
+        <p>{{v.ExampleEn.S}}</p>
+
+        <div class="tags">
+          <iron-icon icon="tag" class="tag-icon"></iron-icon>
+          <template is="dom-repeat" items="{{v.Tags.SS}}" as="t">
+            <a href="/tag/{{t}}" class="tag">{{t}}</a>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <iron-ajax
+    auto
+    url="https://odf89r4psd.execute-api.ap-northeast-1.amazonaws.com/production/tag/{{routeData.tag}}"
+    handle-as="json"
+    on-response="parseVocabulary"
+    debounce-duration="300"></iron-ajax>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'my-tag',
+
+      // Set loading to true
+      properties: {
+        loading: {
+          type: Boolean,
+          notifify: true,
+          value: true
+        }
+      },
+
+      // Get Vocabulary from DynamoDB
+      parseVocabulary: function(request) {
+        this.vocabulary = request.detail.response.Items;
+        this.loading = false;
+      }
+    });
+
+  </script>
+</dom-module>

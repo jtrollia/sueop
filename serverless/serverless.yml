@@ -1,0 +1,39 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: sueop
+
+provider:
+  name: aws
+  runtime: nodejs4.3
+  stage: production
+  region: ap-northeast-1
+  iamRoleStatements:
+  - Effect: "Allow"
+    Resource: "*"
+    Action:
+      - "dynamodb:*"
+
+functions:
+  all:
+    handler: handler.all
+    events:
+      - http: GET all/{class}
+      - stream: arn:aws:dynamodb:ap-northeast-1:994990437018:table/Vocabulary/stream/2016-09-29T11:04:28.030
+      - stream: arn:aws:dynamodb:ap-northeast-1:994990437018:table/History/stream/2016-10-04T06:41:14.768
+      - stream: arn:aws:dynamodb:ap-northeast-1:994990437018:table/Grammar/stream/2016-09-30T07:22:33.019
+  tag:
+    handler: handler.tag
+    events:
+      - http: GET tag/{tag}
+      - stream: arn:aws:dynamodb:ap-northeast-1:994990437018:table/Vocabulary/stream/2016-09-29T11:04:28.030

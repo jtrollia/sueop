@@ -1,0 +1,68 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<dom-module id="my-grammar">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+        position: relative;
+      }
+    </style>
+
+    <template is="dom-if" if="{{loading}}">
+      <div class="showbox">
+        <div class="loader">
+          <svg class="circular" viewBox="25 25 50 50">
+            <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"/>
+          </svg>
+        </div>
+      </div>
+    </template>
+
+    <template is="dom-repeat" items="{{grammar}}" as="g">
+      <div class="card">
+        <h2>{{g.GrammarKr.S}}</h2>
+        <h3>{{g.GrammarEn.S}}</h3>
+        <p>{{g.ExampleKR.S}}</p>
+        <p>{{g.ExampleEn.S}}</p>
+      </div>
+    </template>
+
+    <iron-ajax
+    auto
+    url="https://odf89r4psd.execute-api.ap-northeast-1.amazonaws.com/production/all/Grammar"
+    handle-as="json"
+    on-response="parseGrammar"
+    debounce-duration="300"></iron-ajax>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'my-grammar',
+
+      // Set loading to true
+      properties: {
+        loading: {
+          type: Boolean,
+          notifify: true,
+          value: true
+        }
+      },
+
+      // Get Grammar from DynamoDB
+      parseGrammar: function(request) {
+        this.grammar = request.detail.response.Items;
+        this.loading = false;
+      }
+    });
+  </script>
+</dom-module>

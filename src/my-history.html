@@ -1,0 +1,73 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<dom-module id="my-history">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+        position: relative;
+      }
+      h3 span {
+        font-size: 1rem;
+        font-weight: 400;
+      }
+    </style>
+
+    <template is="dom-if" if="{{loading}}">
+      <div class="showbox">
+        <div class="loader">
+          <svg class="circular" viewBox="25 25 50 50">
+            <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"/>
+          </svg>
+        </div>
+      </div>
+    </template>
+
+    <template is="dom-repeat" items="{{history}}" as="h">
+      <div class="card">
+        <h2>{{h.EraName.S}}</h2>
+
+        <template is="dom-repeat" items="{{h.SubEras.L}}" as="s">
+          <h3>{{s.M.SubEraName.S}} <span>({{s.M.SubEraStartDate.S}} ~ {{s.M.SubEraEndDate.S}})</span></h3>
+        </template>
+      </div>
+    </template>
+
+    <iron-ajax
+    auto
+    url="https://odf89r4psd.execute-api.ap-northeast-1.amazonaws.com/production/all/History"
+    handle-as="json"
+    on-response="parseHistory"
+    debounce-duration="300"></iron-ajax>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'my-history',
+
+      // Set loading to true
+      properties: {
+        loading: {
+          type: Boolean,
+          notifify: true,
+          value: true
+        }
+      },
+
+      // Get History from DynamoDB
+      parseHistory: function(request) {
+        this.history = request.detail.response.Items;
+        this.loading = false;
+      }
+    });
+  </script>
+</dom-module>

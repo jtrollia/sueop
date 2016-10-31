@@ -1,0 +1,212 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="my-icons.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-app">
+  <template>
+    <style>
+      :host {
+        --app-primary-color: #3f51b5;
+        --app-secondary-color: #383838;
+        display: block;
+      }
+      app-header {
+        color: #fff;
+        background-color: var(--app-primary-color);
+      }
+      .custom-hr {
+        border-bottom: 1px solid #eeeeee;
+      }
+      app-header paper-icon-button {
+        --paper-icon-button-ink-color: white;
+      }
+      .drawer-list {
+        margin: 0 20px;
+      }
+      .drawer-list a, .sharers a {
+        display: block;
+        padding: 0 16px;
+        text-decoration: none;
+        color: var(--app-secondary-color);
+        line-height: 40px;
+      }
+      .drawer-list a.iron-selected {
+        color: var(--app-secondary-color);
+        font-weight: bold;
+      }
+      .sharers {
+        border-top: 1px solid #eeeeee;
+        padding-top: 16px;
+      }
+      .sharers a {
+        color: #9e9e9e;
+        transition: color .2s linear;
+        -webkit-transition: color .2s linear;
+      }
+      iron-icon {
+        margin-right: 6px;
+        transition: all 0.2s linear;
+        -webkit-transition: all 0.2s linear;
+      }
+      .twitter:hover iron-icon {
+        fill: #1da1f2;
+      }
+      .twitter:hover {
+        color: #1da1f2;
+      }
+      .ktalk:hover iron-icon {
+        fill: #ffe001;
+      }
+      .ktalk:hover {
+        color: #ffe001;
+      }
+      @media (min-width: 641px) {
+        #kakaolink {
+          display: none;
+        }
+      }
+      .facebook:hover iron-icon {
+        fill: #3b5998;
+      }
+      .facebook:hover {
+        color: #3b5998;
+      }
+    </style>
+
+    <app-location route="{{route}}"></app-location>
+    <app-route
+        route="{{route}}"
+        pattern="/:page"
+        data="{{routeData}}"
+        tail="{{subroute}}"></app-route>
+
+    <app-drawer-layout fullbleed>
+      <!-- Drawer content -->
+      <app-drawer>
+        <app-toolbar>Menu</app-toolbar>
+        <div class="custom-hr"></div>
+        <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+          <a name="vocabulary" href="/vocabulary" drawer-toggle>Vocabulary</a>
+          <a name="grammar" href="/grammar" drawer-toggle>Grammar</a>
+          <a name="history" href="/history" drawer-toggle>History</a>
+        </iron-selector>
+        <div class="sharers">
+          <a href="http://twitter.com/share?text=Basic Korean vocabulary, grammar and history&url=https://sueop.jeanloup.me/" class="twitter">
+            <iron-icon icon="heart"></iron-icon>
+            Twitter
+          </a>
+          <a href="https://www.facebook.com/share.php?u=https://sueop.jeanloup.me/&redirect_uri=https://sueop.jeanloup.me/" class="facebook">
+            <iron-icon icon="thumb"></iron-icon>
+            Facebook
+          </a>
+          <a href="#" id="kakaolink" class="ktalk">
+            <iron-icon icon="chat"></iron-icon>
+            KakaoTalk
+          </a>
+        </div>
+      </app-drawer>
+
+      <!-- Main content -->
+      <app-header-layout has-scrolling-region>
+
+        <app-header condenses reveals effects="waterfall">
+          <app-toolbar>
+            <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+            <div main-title>Sueop</div>
+          </app-toolbar>
+        </app-header>
+
+        <iron-pages
+            selected="[[page]]"
+            attr-for-selected="name"
+            fallback-selection="view404"
+            role="main">
+          <my-vocabulary name="vocabulary"></my-vocabulary>
+          <my-grammar name="grammar"></my-grammar>
+          <my-history name="history"></my-history>
+          <my-tag name="tag" route="{{subroute}}"></my-tag>
+          <my-view404 name="view404"></my-view404>
+        </iron-pages>
+      </app-header-layout>
+    </app-drawer-layout>
+  </template>
+
+
+  <script>
+    Polymer({
+      is: 'my-app',
+
+      // Init Kakao API
+      attached: function() {
+
+        //<![CDATA[
+          Kakao.init('2bccc466ec049b0edca8b52b121e437b');
+          Kakao.Link.createTalkLinkButton({
+            container: this.$.kakaolink,
+            label:     'Basic Korean vocabulary, grammar and history.',
+            image: {
+              src:    'https://d2d7r2k6ht6oz9.cloudfront.net/images/manifest/icon-512x512.png',
+              width:  '512',
+              height: '512'
+            },
+            webButton: {
+              text: 'Sueop',
+              url:  'https://sueop.jeanloup.me/'
+            }
+          });
+        //]]>
+      },
+
+      properties: {
+        page: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_pageChanged'
+        }
+      },
+
+      observers: [
+        '_routePageChanged(routeData.page)'
+      ],
+
+      _routePageChanged: function(page) {
+        this.page = page || 'vocabulary';
+        ga('send', 'pageview', '/'+page);
+      },
+
+      _pageChanged: function(page) {
+        // Load page import on demand. Show 404 page if fails
+        var resolvedPageUrl = this.resolveUrl('my-' + page + '.html');
+        this.importHref(resolvedPageUrl, null, this._showPage404, true);
+      },
+
+      _showPage404: function() {
+        console.log('404');
+        this.page = 'view404';
+      }
+    });
+  </script>
+</dom-module>
